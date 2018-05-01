@@ -1,0 +1,208 @@
+#! /bin/bash
+
+dir="./.lit"
+
+if [[ ! -d "$dir" ]] && [[ ! $1 = "init" ]]
+then
+	echo "No lit tracking setup, use lit init"
+	exit 1
+fi
+
+fopen=$dir"/open"
+fclosed=$dir"/closed"
+
+if [ $# -eq 0 ]
+then
+	lines=`wc -l < $fopen`
+	closedLines=`wc -l < $fclosed`
+	if [ $lines -eq 0 ]
+	then
+		echo "No issues! Go have a beer."
+	else
+		if [ $lines -gt 10 ]
+		then
+			cat -n $fopen | less
+		else
+			cat -n $fopen
+		fi
+	fi
+	exit 1
+fi
+
+if [[ $1 = "init" ]]
+then
+	if [ ! -d "$dir" ]
+	then
+		mkdir $dir
+		touch $fopen
+		touch $fclosed
+		echo "Issues tracking initiated"
+	else
+		echo "Issue tracking already initiated in this folder"
+	fi
+	exit 1
+fi
+
+lines=`wc -l < $fopen`
+closedLines=`wc -l < $fclosed`
+
+if [ $1 = "closed" ]
+then
+	if [ $closedLines -eq 0 ]
+	then
+		echo "No closed issues"
+	else
+		if [ $closedLines -gt 10 ]
+		then
+			cat -n $fclosed | less
+		else
+			cat -n $fclosed
+		fi
+	fi
+fi
+
+if [ $1 = "-a" ]
+then
+	today=`date '+%Y%m%d_%H%M%S'`
+	if [ $# -eq 2 ]
+	then
+		echo "$today~ $2" >> $fopen
+		echo "Open issue added"
+	else
+		read -e -p "Enter a description for this issue: " arg1
+		if [ -z "$arg1" ]
+		then
+			echo "Nothing added"
+		else
+			echo "$today~ $arg1" >> $fopen
+		fi
+	fi
+fi
+
+if [ $1 = "-c" ]
+then
+	if [ $lines -eq 0 ]
+	then
+		echo "No issues to close"
+	else
+		if [ $# -eq 2 ] && [ $2 -gt 0 ]
+		then
+			closeNum=$2
+		else
+			if [ $lines -gt 10 ]
+			then
+				cat -n $fopen | less
+			else
+				echo "#  open_date  description"
+				cat -n $fopen
+			fi
+			read -e -p "Issue number to close (0 to escape): " closeNum
+		fi
+		if [ $closeNum -eq 0 ]
+		then
+			echo "Nothing closed"
+		else
+			if [ $closeNum -gt $lines ]
+			then
+				echo "Invalid entry, no issues closed"
+			else
+				issue=`sed -n $closeNum"p" $fopen`
+				today=`date '+%Y%m%d_%H%M%S'`
+				echo "$today~$issue" >> $fclosed
+				sed -i -e $closeNum"d" $fopen
+				echo "Issue closed"
+			fi
+		fi
+	fi
+fi
+
+if [ $1 = "-d" ]
+then
+	if [ $lines -eq 0 ]
+	then
+		echo "No issues to delete"
+	else	
+		if [ $lines -gt 10 ]
+		then
+			cat -n $fopen | less
+		else
+			cat -n $fopen
+		fi
+		read -e -p "Issue number to delete (0 to escape): " deleteNum
+		if [ $deleteNum -eq 0 ]
+		then
+			echo "Nothing deleted"
+		else
+			if [ $deleteNum -gt $lines ]
+			then
+				echo "Invalid entry, no issues deleted"
+			else
+				sed -i -e $deleteNum"d" $fopen
+				echo "Issue deleted"
+			fi
+		fi
+	fi
+fi
+
+if [ $1 = "-dc" ]
+then
+	if [ $closedLines -eq 0 ]
+	then
+		echo "No closed issues to delete."
+	else
+		if [ $closedLines -gt 10 ]
+		then
+			cat -n $fclosed | less
+		else
+			cat -n $fclosed
+		fi
+		read -e -p "Closed issue number to delete (0 to escape): " deleteNum
+		if [ $deleteNum -eq 0 ]
+		then
+			echo "Nothing deleted"
+			exit 1
+		else
+			if [ $deleteNum -gt $closedLines ]
+			then
+				echo "Invalid entry, no closed issues deleted."
+			else
+				sed -i -e $deleteNum"d" $fclosed
+				echo "Closed issue deleted"
+			fi
+		fi
+	fi
+fi
+
+if [ $1 = "-d-all" ]
+then
+	if [ $lines -eq 0 ]
+	then
+		echo "No issues to delete"
+	else
+		read -e -p "Are you sure you want to delete all open issues (y/n): " del
+		if [ $del="y" ] || [ $del="Y" ]
+		then
+			echo "All issues have been deleted"
+			>$fopen
+		else
+			echo "Delete cancelled"
+		fi
+	fi
+fi
+				
+if [ $1 = "-dc-all" ]
+then
+	if [ $closedLines -eq 0 ]
+	then
+		echo "No closed issues to delete"
+	else
+		read -e -p "are your sure you want to delete all closed issues (y/n): " del
+		if [ $del="y" ] || [ $del="Y" ]
+		then
+			echo "All closed issues have been deletd"
+			>$fclosed
+		else
+			echo "Delete cancelled"
+		fi
+	fi
+fi			
