@@ -1,5 +1,12 @@
 #! /bin/bash
 
+
+if [ $1 = "-r" ]
+then
+	find . -type d -name '.lit' -exec echo {} \; -exec cat -n {}/open \;
+	exit 1
+fi		
+
 dir="./.lit"
 
 if [[ ! -d "$dir" ]] && [[ ! $1 = "init" ]]
@@ -75,6 +82,7 @@ then
 			echo "Nothing added"
 		else
 			echo "$today~ $arg1" >> $fopen
+			echo "Open issue added"
 		fi
 	fi
 fi
@@ -205,4 +213,4 @@ then
 			echo "Delete cancelled"
 		fi
 	fi
-fi			
+fi

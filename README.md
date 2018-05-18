@@ -14,6 +14,9 @@ This creates folder '.lit' with files 'open' and 'closed'
 •`lit` with no arguments or flags
 List all open issues
 
+•`lit -r`
+Recursively list all open issues and location
+
 •`lit closed`
 List all closed issues
 
