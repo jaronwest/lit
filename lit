@@ -1,11 +1,12 @@
 #! /bin/bash
 
 
-if [ $1 = "-r" ]
+if [[ $1 = "-r" ]]
 then
 	find . -type d -name '.lit' -exec echo {} \; -exec cat -n {}/open \;
 	exit 1
-fi		
+fi
+		
 
 dir="./.lit"
 
@@ -38,7 +39,7 @@ fi
 
 if [[ $1 = "init" ]]
 then
-	if [ ! -d "$dir" ]
+	if [[ ! -d "$dir" ]]
 	then
 		mkdir $dir
 		touch $fopen
@@ -53,7 +54,7 @@ fi
 lines=`wc -l < $fopen`
 closedLines=`wc -l < $fclosed`
 
-if [ $1 = "closed" ]
+if [[ $1 = "closed" ]]
 then
 	if [ $closedLines -eq 0 ]
 	then
